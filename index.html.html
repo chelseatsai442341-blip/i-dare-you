@@ -1,0 +1,1138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<meta name="apple-mobile-web-app-title" content="I DARE YOU">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#000000">
+<title>I DARE YOU</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --neon-blue: #00f3ff;
+    --neon-red: #ff003c;
+    --white: #ffffff;
+    --black: #000000;
+    --blue-glow: 0 0 8px #00f3ff, 0 0 20px #00f3ff44;
+    --red-glow: 0 0 8px #ff003c, 0 0 20px #ff003c44;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+  html, body {
+    background: #000;
+    color: #fff;
+    font-family: 'Orbitron', monospace;
+    min-height: 100vh;
+    overflow-x: hidden;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background:
+      repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,243,255,0.015) 2px, rgba(0,243,255,0.015) 4px),
+      repeating-linear-gradient(90deg, transparent, transparent 2px, rgba(255,0,60,0.008) 2px, rgba(255,0,60,0.008) 4px);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .screen { display: none; flex-direction: column; align-items: center; min-height: 100vh; padding: 24px 20px 40px; position: relative; z-index: 1; }
+  .screen.active { display: flex; }
+
+  /* HEADER */
+  .header {
+    text-align: center;
+    margin-bottom: 32px;
+    width: 100%;
+  }
+
+  .finger-emoji {
+    font-size: 72px;
+    display: block;
+    margin-bottom: 12px;
+    animation: point 1.5s ease-in-out infinite;
+    line-height: 1;
+    filter: drop-shadow(0 0 12px rgba(255,0,60,0.6));
+  }
+
+  @keyframes point {
+    0%, 100% { transform: rotate(-10deg) scale(1); }
+    50% { transform: rotate(-10deg) scale(1.08) translateX(6px); }
+  }
+
+  .app-title {
+    font-size: clamp(28px, 8vw, 42px);
+    font-weight: 900;
+    letter-spacing: 0.15em;
+    line-height: 1;
+    background: linear-gradient(90deg, var(--neon-red), var(--neon-blue), var(--neon-red));
+    background-size: 200%;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    animation: titleShift 4s linear infinite;
+  }
+
+  @keyframes titleShift {
+    0% { background-position: 0% 50%; }
+    100% { background-position: 200% 50%; }
+  }
+
+  .subtitle {
+    font-size: 11px;
+    color: rgba(255,255,255,0.4);
+    letter-spacing: 0.3em;
+    margin-top: 6px;
+    font-family: 'Share Tech Mono', monospace;
+  }
+
+  /* STEP INDICATOR */
+  .step-bar {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 28px;
+    align-items: center;
+  }
+
+  .step-dot {
+    width: 28px;
+    height: 4px;
+    border-radius: 2px;
+    background: rgba(255,255,255,0.15);
+    transition: all 0.3s ease;
+  }
+
+  .step-dot.done { background: var(--neon-blue); box-shadow: var(--blue-glow); }
+  .step-dot.active { background: var(--neon-red); box-shadow: var(--red-glow); }
+
+  /* SECTION LABEL */
+  .section-label {
+    font-size: 10px;
+    letter-spacing: 0.4em;
+    color: var(--neon-blue);
+    margin-bottom: 16px;
+    text-shadow: var(--blue-glow);
+    text-align: center;
+    font-family: 'Share Tech Mono', monospace;
+  }
+
+  .question-text {
+    font-size: clamp(16px, 5vw, 22px);
+    font-weight: 700;
+    color: var(--white);
+    text-align: center;
+    margin-bottom: 28px;
+    letter-spacing: 0.08em;
+    line-height: 1.3;
+  }
+
+  /* PLAYER COUNT */
+  .player-count-display {
+    font-size: 72px;
+    font-weight: 900;
+    color: var(--neon-red);
+    text-shadow: var(--red-glow);
+    text-align: center;
+    line-height: 1;
+    margin-bottom: 8px;
+    transition: all 0.2s;
+  }
+
+  .player-label {
+    font-size: 11px;
+    letter-spacing: 0.4em;
+    color: rgba(255,255,255,0.5);
+    text-align: center;
+    margin-bottom: 28px;
+    font-family: 'Share Tech Mono', monospace;
+  }
+
+  .count-controls {
+    display: flex;
+    gap: 20px;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 36px;
+  }
+
+  .count-btn {
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    border: 2px solid var(--neon-blue);
+    background: transparent;
+    color: var(--neon-blue);
+    font-size: 28px;
+    font-family: 'Orbitron', monospace;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+    box-shadow: var(--blue-glow);
+  }
+
+  .count-btn:active { transform: scale(0.9); background: rgba(0,243,255,0.15); }
+
+  /* OPTION CARDS */
+  .options-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+    width: 100%;
+    margin-bottom: 32px;
+  }
+
+  .option-card {
+    border: 1.5px solid rgba(255,255,255,0.15);
+    border-radius: 12px;
+    padding: 16px 12px;
+    cursor: pointer;
+    text-align: center;
+    transition: all 0.25s ease;
+    background: rgba(255,255,255,0.03);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .option-card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    transition: opacity 0.25s;
+    border-radius: 10px;
+  }
+
+  .option-card.blue::before { background: rgba(0,243,255,0.08); }
+  .option-card.red::before { background: rgba(255,0,60,0.08); }
+
+  .option-card:active { transform: scale(0.97); }
+
+  .option-card.selected.blue {
+    border-color: var(--neon-blue);
+    box-shadow: var(--blue-glow), inset 0 0 20px rgba(0,243,255,0.06);
+  }
+
+  .option-card.selected.red {
+    border-color: var(--neon-red);
+    box-shadow: var(--red-glow), inset 0 0 20px rgba(255,0,60,0.06);
+  }
+
+  .option-card.selected::before { opacity: 1; }
+
+  .option-icon { font-size: 28px; margin-bottom: 8px; display: block; }
+
+  .option-title {
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    color: var(--white);
+    line-height: 1.3;
+  }
+
+  .option-card.selected.blue .option-title { color: var(--neon-blue); text-shadow: var(--blue-glow); }
+  .option-card.selected.red .option-title { color: var(--neon-red); text-shadow: var(--red-glow); }
+
+  .option-sub {
+    font-size: 9px;
+    letter-spacing: 0.2em;
+    color: rgba(255,255,255,0.35);
+    margin-top: 4px;
+    font-family: 'Share Tech Mono', monospace;
+  }
+
+  /* BUTTONS */
+  .btn-primary {
+    width: 100%;
+    max-width: 340px;
+    padding: 18px 24px;
+    border: 2px solid var(--neon-red);
+    border-radius: 8px;
+    background: transparent;
+    color: var(--neon-red);
+    font-family: 'Orbitron', monospace;
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.25s;
+    box-shadow: var(--red-glow);
+    margin-top: auto;
+  }
+
+  .btn-primary:active { transform: scale(0.97); background: rgba(255,0,60,0.12); }
+  .btn-primary:disabled { opacity: 0.3; cursor: not-allowed; box-shadow: none; }
+
+  .btn-secondary {
+    width: 100%;
+    max-width: 340px;
+    padding: 14px 24px;
+    border: 1.5px solid rgba(0,243,255,0.4);
+    border-radius: 8px;
+    background: transparent;
+    color: rgba(0,243,255,0.7);
+    font-family: 'Orbitron', monospace;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.25s;
+    margin-top: 12px;
+  }
+
+  .btn-secondary:active { transform: scale(0.97); color: var(--neon-blue); border-color: var(--neon-blue); }
+
+  /* GAME SCREEN */
+  .game-header {
+    text-align: center;
+    margin-bottom: 20px;
+    width: 100%;
+  }
+
+  .game-title {
+    font-size: 11px;
+    letter-spacing: 0.5em;
+    color: rgba(255,255,255,0.35);
+    font-family: 'Share Tech Mono', monospace;
+    margin-bottom: 6px;
+  }
+
+  .players-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 14px;
+    border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 100px;
+    font-size: 10px;
+    letter-spacing: 0.25em;
+    color: rgba(255,255,255,0.5);
+    font-family: 'Share Tech Mono', monospace;
+  }
+
+  .type-tabs {
+    display: flex;
+    gap: 0;
+    width: 100%;
+    margin-bottom: 24px;
+    border: 1.5px solid rgba(255,255,255,0.1);
+    border-radius: 10px;
+    overflow: hidden;
+  }
+
+  .type-tab {
+    flex: 1;
+    padding: 14px 8px;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    font-family: 'Orbitron', monospace;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    transition: all 0.25s;
+    color: rgba(255,255,255,0.4);
+    position: relative;
+  }
+
+  .type-tab.truth.active {
+    background: rgba(0,243,255,0.1);
+    color: var(--neon-blue);
+    text-shadow: var(--blue-glow);
+    border-right: 1px solid rgba(0,243,255,0.3);
+  }
+
+  .type-tab.dare.active {
+    background: rgba(255,0,60,0.1);
+    color: var(--neon-red);
+    text-shadow: var(--red-glow);
+    border-left: 1px solid rgba(255,0,60,0.3);
+  }
+
+  /* TOPIC CARD */
+  .topic-card {
+    width: 100%;
+    min-height: 200px;
+    border-radius: 16px;
+    padding: 28px 24px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+    margin-bottom: 20px;
+    transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+
+  .topic-card.truth-card {
+    border: 2px solid var(--neon-blue);
+    background: radial-gradient(ellipse at 50% 0%, rgba(0,243,255,0.08) 0%, transparent 70%);
+    box-shadow: var(--blue-glow), inset 0 0 40px rgba(0,243,255,0.03);
+  }
+
+  .topic-card.dare-card {
+    border: 2px solid var(--neon-red);
+    background: radial-gradient(ellipse at 50% 0%, rgba(255,0,60,0.08) 0%, transparent 70%);
+    box-shadow: var(--red-glow), inset 0 0 40px rgba(255,0,60,0.03);
+  }
+
+  .topic-type-badge {
+    font-size: 9px;
+    letter-spacing: 0.5em;
+    margin-bottom: 16px;
+    font-family: 'Share Tech Mono', monospace;
+    padding: 4px 16px;
+    border-radius: 100px;
+  }
+
+  .truth-card .topic-type-badge {
+    color: var(--neon-blue);
+    border: 1px solid rgba(0,243,255,0.4);
+    text-shadow: var(--blue-glow);
+  }
+
+  .dare-card .topic-type-badge {
+    color: var(--neon-red);
+    border: 1px solid rgba(255,0,60,0.4);
+    text-shadow: var(--red-glow);
+  }
+
+  .topic-text {
+    font-size: clamp(15px, 4.5vw, 20px);
+    font-weight: 700;
+    line-height: 1.5;
+    letter-spacing: 0.05em;
+    color: var(--white);
+  }
+
+  @keyframes flipIn {
+    0% { transform: rotateX(90deg) scale(0.8); opacity: 0; }
+    100% { transform: rotateX(0deg) scale(1); opacity: 1; }
+  }
+
+  .topic-card.flip { animation: flipIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1); }
+
+  /* DRAW BUTTON */
+  .draw-btn {
+    width: 100%;
+    max-width: 340px;
+    padding: 20px 24px;
+    border-radius: 10px;
+    background: transparent;
+    font-family: 'Orbitron', monospace;
+    font-size: 13px;
+    font-weight: 900;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.3s;
+    position: relative;
+    overflow: hidden;
+    margin-bottom: 12px;
+  }
+
+  .draw-btn.truth-btn {
+    border: 2px solid var(--neon-blue);
+    color: var(--neon-blue);
+    box-shadow: var(--blue-glow);
+  }
+
+  .draw-btn.dare-btn {
+    border: 2px solid var(--neon-red);
+    color: var(--neon-red);
+    box-shadow: var(--red-glow);
+  }
+
+  .draw-btn::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: currentColor;
+    opacity: 0;
+    transition: opacity 0.2s;
+  }
+
+  .draw-btn:active::before { opacity: 0.1; }
+  .draw-btn:active { transform: scale(0.97); }
+
+  /* SCANLINE EFFECT */
+  @keyframes scanline {
+    0% { transform: translateY(-100%); }
+    100% { transform: translateY(100vh); }
+  }
+
+  .scanline {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(transparent, rgba(0,243,255,0.08), transparent);
+    animation: scanline 6s linear infinite;
+    pointer-events: none;
+    z-index: 999;
+  }
+
+  /* FLICKER */
+  @keyframes flicker {
+    0%, 95%, 100% { opacity: 1; }
+    96% { opacity: 0.85; }
+    97% { opacity: 1; }
+    98% { opacity: 0.9; }
+  }
+
+  .app-title { animation: titleShift 4s linear infinite, flicker 8s infinite; }
+
+  /* TRANSITION */
+  .screen { animation: screenIn 0.4s ease; }
+
+  @keyframes screenIn {
+    from { opacity: 0; transform: translateY(12px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .divider {
+    width: 100%;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+    margin: 20px 0;
+  }
+
+  .settings-summary {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    justify-content: center;
+    margin-bottom: 20px;
+  }
+
+  .setting-tag {
+    padding: 4px 10px;
+    border-radius: 100px;
+    font-size: 9px;
+    letter-spacing: 0.2em;
+    font-family: 'Share Tech Mono', monospace;
+    border: 1px solid rgba(255,255,255,0.12);
+    color: rgba(255,255,255,0.45);
+  }
+
+  .restart-link {
+    font-size: 10px;
+    letter-spacing: 0.3em;
+    color: rgba(255,255,255,0.25);
+    text-decoration: none;
+    cursor: pointer;
+    font-family: 'Share Tech Mono', monospace;
+    background: none;
+    border: none;
+    padding: 8px;
+    margin-top: 8px;
+    transition: color 0.2s;
+  }
+
+  .restart-link:active { color: rgba(255,255,255,0.6); }
+</style>
+</head>
+<body>
+
+<div class="scanline"></div>
+
+<!-- SCREEN 1: WELCOME -->
+<div class="screen active" id="screen-welcome">
+  <div class="header">
+    <span class="finger-emoji">👆</span>
+    <div class="app-title">I DARE YOU</div>
+    <div class="subtitle">TRUTH OR DARE</div>
+  </div>
+
+  <div style="text-align:center; margin-bottom: 40px; flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; width: 100%;">
+    <div style="font-size: 11px; color: rgba(255,255,255,0.35); letter-spacing: 0.3em; font-family: 'Share Tech Mono', monospace; margin-bottom: 20px; line-height: 1.8;">
+      SELECT YOUR PLAYERS<br>PICK YOUR VIBE<br>FACE YOUR FATE
+    </div>
+    <div style="width: 60px; height: 1px; background: linear-gradient(90deg, transparent, var(--neon-red), transparent); margin: 20px auto;"></div>
+    <div style="font-size: 9px; color: rgba(255,255,255,0.2); letter-spacing: 0.4em; font-family: 'Share Tech Mono', monospace;">
+      ARE YOU READY?
+    </div>
+  </div>
+
+  <button class="btn-primary" onclick="goTo('screen-players')">▶ &nbsp; START THE GAME</button>
+</div>
+
+<!-- SCREEN 2: PLAYER COUNT -->
+<div class="screen" id="screen-players">
+  <div class="header">
+    <span class="finger-emoji" style="font-size: 40px; margin-bottom: 4px;">👆</span>
+    <div class="app-title" style="font-size: 22px;">I DARE YOU</div>
+  </div>
+
+  <div class="step-bar">
+    <div class="step-dot active"></div>
+    <div class="step-dot"></div>
+    <div class="step-dot"></div>
+    <div class="step-dot"></div>
+  </div>
+
+  <div class="section-label">STEP 01 / 04</div>
+  <div class="question-text">HOW MANY PLAYERS?</div>
+
+  <div class="player-count-display" id="player-display">4</div>
+  <div class="player-label">PLAYERS</div>
+
+  <div class="count-controls">
+    <button class="count-btn" onclick="changeCount(-1)">−</button>
+    <div style="width: 120px; text-align: center;">
+      <input type="range" id="player-slider" min="2" max="30" value="4"
+        oninput="updateCount(this.value)"
+        style="width: 100%; accent-color: var(--neon-red);">
+    </div>
+    <button class="count-btn" onclick="changeCount(1)">+</button>
+  </div>
+
+  <button class="btn-primary" onclick="goTo('screen-relation')">NEXT &nbsp; ▶</button>
+</div>
+
+<!-- SCREEN 3: RELATION TYPE -->
+<div class="screen" id="screen-relation">
+  <div class="header">
+    <span class="finger-emoji" style="font-size: 40px; margin-bottom: 4px;">👆</span>
+    <div class="app-title" style="font-size: 22px;">I DARE YOU</div>
+  </div>
+
+  <div class="step-bar">
+    <div class="step-dot done"></div>
+    <div class="step-dot active"></div>
+    <div class="step-dot"></div>
+    <div class="step-dot"></div>
+  </div>
+
+  <div class="section-label">STEP 02 / 04</div>
+  <div class="question-text">WHAT'S YOUR RELATION?</div>
+
+  <div class="options-grid" id="relation-grid">
+    <div class="option-card blue" data-value="friends" onclick="selectOption(this, 'relation-grid', 'relation')">
+      <span class="option-icon">🤝</span>
+      <div class="option-title">FRIENDS</div>
+      <div class="option-sub">CLOSE CREW</div>
+    </div>
+    <div class="option-card red" data-value="couples" onclick="selectOption(this, 'relation-grid', 'relation')">
+      <span class="option-icon">💘</span>
+      <div class="option-title">COUPLES</div>
+      <div class="option-sub">LOVE BIRDS</div>
+    </div>
+    <div class="option-card blue" data-value="strangers" onclick="selectOption(this, 'relation-grid', 'relation')">
+      <span class="option-icon">👥</span>
+      <div class="option-title">STRANGERS</div>
+      <div class="option-sub">FIRST MEET</div>
+    </div>
+    <div class="option-card red" data-value="classmates" onclick="selectOption(this, 'relation-grid', 'relation')">
+      <span class="option-icon">🎓</span>
+      <div class="option-title">CLASSMATES</div>
+      <div class="option-sub">SCHOOL SQUAD</div>
+    </div>
+  </div>
+
+  <button class="btn-primary" id="btn-relation" disabled onclick="goTo('screen-setting')">NEXT &nbsp; ▶</button>
+  <button class="btn-secondary" onclick="goTo('screen-players')">◀ BACK</button>
+</div>
+
+<!-- SCREEN 4: SETTING -->
+<div class="screen" id="screen-setting">
+  <div class="header">
+    <span class="finger-emoji" style="font-size: 40px; margin-bottom: 4px;">👆</span>
+    <div class="app-title" style="font-size: 22px;">I DARE YOU</div>
+  </div>
+
+  <div class="step-bar">
+    <div class="step-dot done"></div>
+    <div class="step-dot done"></div>
+    <div class="step-dot active"></div>
+    <div class="step-dot"></div>
+  </div>
+
+  <div class="section-label">STEP 03 / 04</div>
+  <div class="question-text">WHERE ARE YOU?</div>
+
+  <div class="options-grid" id="location-grid">
+    <div class="option-card blue" data-value="indoors" onclick="selectOption(this, 'location-grid', 'location')">
+      <span class="option-icon">🏠</span>
+      <div class="option-title">INDOORS</div>
+      <div class="option-sub">INSIDE</div>
+    </div>
+    <div class="option-card red" data-value="outdoors" onclick="selectOption(this, 'location-grid', 'location')">
+      <span class="option-icon">🌿</span>
+      <div class="option-title">OUTDOORS</div>
+      <div class="option-sub">OUTSIDE</div>
+    </div>
+    <div class="option-card red" data-value="crowded" onclick="selectOption(this, 'crowd-grid', 'crowd')">
+      <span class="option-icon">🏙️</span>
+      <div class="option-title">CROWDED ROOM</div>
+      <div class="option-sub">PUBLIC</div>
+    </div>
+    <div class="option-card blue" data-value="secluded" onclick="selectOption(this, 'crowd-grid', 'crowd')">
+      <span class="option-icon">🌙</span>
+      <div class="option-title">SECLUDED</div>
+      <div class="option-sub">PRIVATE</div>
+    </div>
+  </div>
+
+  <!-- hidden second grid id for crowd -->
+  <div id="crowd-grid" style="display:none;"></div>
+
+  <button class="btn-primary" id="btn-setting" disabled onclick="goTo('screen-vibe')">NEXT &nbsp; ▶</button>
+  <button class="btn-secondary" onclick="goTo('screen-relation')">◀ BACK</button>
+</div>
+
+<!-- SCREEN 5: VIBE -->
+<div class="screen" id="screen-vibe">
+  <div class="header">
+    <span class="finger-emoji" style="font-size: 40px; margin-bottom: 4px;">👆</span>
+    <div class="app-title" style="font-size: 22px;">I DARE YOU</div>
+  </div>
+
+  <div class="step-bar">
+    <div class="step-dot done"></div>
+    <div class="step-dot done"></div>
+    <div class="step-dot done"></div>
+    <div class="step-dot active"></div>
+  </div>
+
+  <div class="section-label">STEP 04 / 04</div>
+  <div class="question-text">WHAT'S THE VIBE?</div>
+
+  <div class="options-grid" id="vibe-grid" style="grid-template-columns: 1fr 1fr; max-width: 340px;">
+    <div class="option-card blue" data-value="relaxing" onclick="selectOption(this, 'vibe-grid', 'vibe')" style="min-height: 140px;">
+      <span class="option-icon">😌</span>
+      <div class="option-title">RELAXING</div>
+      <div class="option-sub">CHILL MODE</div>
+    </div>
+    <div class="option-card red" data-value="exciting" onclick="selectOption(this, 'vibe-grid', 'vibe')" style="min-height: 140px;">
+      <span class="option-icon">🔥</span>
+      <div class="option-title">EXCITING</div>
+      <div class="option-sub">WILD MODE</div>
+    </div>
+  </div>
+
+  <button class="btn-primary" id="btn-vibe" disabled onclick="startGame()" style="margin-top: 20px;">🎲 &nbsp; GENERATE TOPICS</button>
+  <button class="btn-secondary" onclick="goTo('screen-setting')">◀ BACK</button>
+</div>
+
+<!-- SCREEN 6: GAME -->
+<div class="screen" id="screen-game">
+  <div class="game-header">
+    <div class="app-title" style="font-size: 18px; margin-bottom: 8px;">I DARE YOU</div>
+    <div class="players-badge">
+      <span>👥</span>
+      <span id="game-player-count">4 PLAYERS</span>
+    </div>
+  </div>
+
+  <div class="settings-summary" id="settings-summary"></div>
+
+  <div class="type-tabs">
+    <button class="type-tab truth active" id="tab-truth" onclick="switchTab('truth')">TRUTH</button>
+    <button class="type-tab dare" id="tab-dare" onclick="switchTab('dare')">DARE</button>
+  </div>
+
+  <div class="topic-card truth-card flip" id="topic-card">
+    <div class="topic-type-badge" id="topic-badge">TRUTH</div>
+    <div class="topic-text" id="topic-text">LOADING...</div>
+  </div>
+
+  <button class="draw-btn truth-btn" id="draw-btn" onclick="drawTopic()">🎲 &nbsp; DRAW ANOTHER TOPIC</button>
+
+  <button class="restart-link" onclick="goTo('screen-welcome')">↺ NEW GAME</button>
+</div>
+
+<script>
+  const state = {
+    players: 4,
+    relation: null,
+    location: null,
+    crowd: null,
+    vibe: null,
+    currentTab: 'truth'
+  };
+
+  const selections = {};
+
+  function goTo(screenId) {
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    document.getElementById(screenId).classList.add('active');
+    window.scrollTo(0, 0);
+  }
+
+  function updateCount(val) {
+    state.players = parseInt(val);
+    document.getElementById('player-display').textContent = val;
+    document.getElementById('player-slider').value = val;
+  }
+
+  function changeCount(delta) {
+    const cur = state.players + delta;
+    if (cur >= 2 && cur <= 30) updateCount(cur);
+  }
+
+  function selectOption(el, gridId, key) {
+    const grid = document.getElementById(gridId);
+    grid.querySelectorAll('.option-card').forEach(c => c.classList.remove('selected'));
+    el.classList.add('selected');
+    state[key] = el.dataset.value;
+    selections[key] = el.dataset.value;
+
+    if (key === 'relation') document.getElementById('btn-relation').disabled = false;
+    if (key === 'location' || key === 'crowd') {
+      if (state.location && state.crowd) document.getElementById('btn-setting').disabled = false;
+    }
+    if (key === 'vibe') document.getElementById('btn-vibe').disabled = false;
+  }
+
+  // Fix: setting screen has two separate selection groups but same visual grid
+  // Override the option card click for setting screen
+  document.querySelectorAll('#screen-setting .option-card').forEach((card, i) => {
+    card.onclick = function() {
+      const key = i < 2 ? 'location' : 'crowd';
+      const sameGroup = i < 2 ? [0,1] : [2,3];
+      const allCards = document.querySelectorAll('#screen-setting .option-card');
+      sameGroup.forEach(idx => allCards[idx].classList.remove('selected'));
+      this.classList.add('selected');
+      state[key] = this.dataset.value;
+      if (state.location && state.crowd) document.getElementById('btn-setting').disabled = false;
+    };
+  });
+
+  function startGame() {
+    document.getElementById('game-player-count').textContent = state.players + ' PLAYERS';
+
+    const tags = [
+      state.relation?.toUpperCase(),
+      state.location?.toUpperCase(),
+      state.crowd?.toUpperCase(),
+      state.vibe?.toUpperCase()
+    ].filter(Boolean);
+
+    const summary = document.getElementById('settings-summary');
+    summary.innerHTML = tags.map(t => `<span class="setting-tag">${t}</span>`).join('');
+
+    goTo('screen-game');
+    drawTopic();
+  }
+
+  function switchTab(type) {
+    state.currentTab = type;
+    const card = document.getElementById('topic-card');
+    const btn = document.getElementById('draw-btn');
+    const tabT = document.getElementById('tab-truth');
+    const tabD = document.getElementById('tab-dare');
+
+    if (type === 'truth') {
+      tabT.classList.add('active');
+      tabD.classList.remove('active');
+      card.className = 'topic-card truth-card';
+      btn.className = 'draw-btn truth-btn';
+    } else {
+      tabD.classList.add('active');
+      tabT.classList.remove('active');
+      card.className = 'topic-card dare-card';
+      btn.className = 'draw-btn dare-btn';
+    }
+    drawTopic();
+  }
+
+  function drawTopic() {
+    const topic = getRandomTopic(state.currentTab);
+    const card = document.getElementById('topic-card');
+    const badge = document.getElementById('topic-badge');
+    const text = document.getElementById('topic-text');
+
+    card.classList.remove('flip');
+    void card.offsetWidth;
+    card.classList.add('flip');
+
+    badge.textContent = state.currentTab.toUpperCase();
+    text.textContent = topic.toUpperCase();
+  }
+
+  function getRandomTopic(type) {
+    const r = state.relation || 'friends';
+    const loc = state.location || 'indoors';
+    const crowd = state.crowd || 'secluded';
+    const vibe = state.vibe || 'relaxing';
+    const players = state.players;
+
+    const pools = {
+      truth: {
+        friends: {
+          relaxing: [
+            "What's the most embarrassing thing that happened to you this year?",
+            "What's a secret talent you haven't shown anyone here?",
+            "Who in this group do you think is the funniest?",
+            "What's the weirdest food combination you secretly enjoy?",
+            "What's a childhood memory you still think about?",
+            "What's one thing you've never told your parents?",
+            "What's your most irrational fear?",
+            "Have you ever lied to get out of a hangout with someone here?",
+            "What's the nicest thing anyone in this group has ever done for you?",
+            "What's a hobby you've always wanted to try but never did?",
+            "What's the last thing you searched on YouTube at 2am?",
+            "If you could swap lives with anyone in this room for a day, who would it be?",
+          ],
+          exciting: [
+            "What's the wildest thing you've ever done that nobody knows about?",
+            "What's the most trouble you've ever gotten into?",
+            "Have you ever had feelings for someone in this group?",
+            "What's the biggest lie you've told a friend and gotten away with?",
+            "What's something you've done that you'd be mortified if your parents found out?",
+            "Have you ever stolen something? What was it?",
+            "What's the most embarrassing text you've ever sent to the wrong person?",
+            "Who here do you think has the most drama in their life?",
+            "What's the most cringe thing you've done to impress someone?",
+            "Have you ever talked badly about someone in this room behind their back?",
+          ]
+        },
+        couples: {
+          relaxing: [
+            "What's one thing your partner does that you find secretly adorable?",
+            "What was the moment you realized you had real feelings?",
+            "What's your favorite memory with your partner so far?",
+            "What's something your partner does that calms you down?",
+            "Describe your ideal lazy Sunday together.",
+            "What's one habit of your partner you'd never change?",
+            "What's a little thing your partner does that makes your day?",
+            "What song reminds you of your partner?",
+            "What's the first thing you noticed about your partner?",
+            "What's something you're still learning about your partner?",
+          ],
+          exciting: [
+            "What's something about your partner that still surprises you?",
+            "What's the most spontaneous thing you two have done together?",
+            "Have you ever been jealous of someone your partner mentioned?",
+            "What's a secret you've been keeping from your partner?",
+            "What's the most adventurous date you'd want to go on?",
+            "When did you last feel butterflies around your partner?",
+            "Have you ever tested your partner without them knowing?",
+            "What's the boldest thing you've ever said to your partner?",
+            "What's one thing you wish your partner would do more of?",
+            "What's something your partner doesn't know turns you on?",
+          ]
+        },
+        strangers: {
+          relaxing: [
+            "What's one thing you wish people knew about you when they first meet you?",
+            "What's your go-to topic when meeting someone new?",
+            "What's something you love doing alone?",
+            "What's the most interesting place you've ever been to?",
+            "If you could have any job in the world, what would it be?",
+            "What's a book, movie, or show that changed your perspective?",
+            "What's something you're passionate about that surprises people?",
+            "What's the best meal you've ever had?",
+            "What's one random fact you know that most people don't?",
+            "What's a goal you're currently working toward?",
+          ],
+          exciting: [
+            "What's the most outrageous thing you've ever done?",
+            "Have you ever done something illegal? Can you describe it without revealing too much?",
+            "What's the boldest thing you've ever said to a stranger?",
+            "What's your go-to move when you want to impress someone new?",
+            "What's a controversial opinion you'd defend in a crowd?",
+            "What's the most awkward first impression you've ever made?",
+            "What's something you'd only confess to someone you just met?",
+            "Have you ever faked being interested in someone just to be polite?",
+            "What's the wildest conversation you've ever had with a stranger?",
+            "If you had 24 hours to live, what would you do?",
+          ]
+        },
+        classmates: {
+          relaxing: [
+            "Who in class do you think will be most successful in 10 years?",
+            "What subject do you secretly actually enjoy?",
+            "What's a school memory that still makes you smile?",
+            "Who was your favorite teacher and why?",
+            "What's something school taught you that actually applies to real life?",
+            "Have you ever done a group project but done all the work yourself?",
+            "What do you want to do after you finish school?",
+            "What's the best thing about being in class together?",
+            "If you could change one thing about school, what would it be?",
+            "What's your most embarrassing classroom moment?",
+          ],
+          exciting: [
+            "Have you ever cheated on a test or helped someone else cheat?",
+            "Who in class do you have a crush on right now?",
+            "Have you ever skipped class to do something way more fun?",
+            "What's the most rebellious thing you've done at school?",
+            "Have you ever talked badly about a teacher to another teacher?",
+            "What's the wildest thing that's ever happened in class?",
+            "Have you ever gotten someone else in trouble by accident? Or on purpose?",
+            "What's something you'd never say in front of a teacher?",
+            "Who do you think is the biggest troublemaker here and why?",
+            "What's the most dramatic school gossip you've ever heard?",
+          ]
+        }
+      },
+      dare: {
+        friends: {
+          relaxing: [
+            "Do your best impression of the person to your left.",
+            "Swap a clothing item with the person next to you for the rest of the round.",
+            "Let someone else post a photo on your phone's last camera roll shot as your status.",
+            "Speak in a different accent for the next 3 rounds.",
+            "Do your best runway walk across the room.",
+            "Let someone go through your last 5 browsing history items.",
+            "Give a genuine compliment to every person in the room.",
+            "Do 10 jumping jacks while singing a song.",
+            "Attempt to lick your elbow.",
+            "Let someone draw on your hand with a pen.",
+            "Text the 5th contact in your phone 'I think about you sometimes.'",
+            "Act out a movie scene chosen by the group without speaking.",
+          ],
+          exciting: [
+            "Do your most embarrassing dance move for 30 seconds.",
+            "Let the group choose a ridiculous caption and post it on your story.",
+            "Call someone in your contacts and pretend you got their number from a mutual stranger.",
+            "Let the group change your profile photo for 1 hour.",
+            "Eat a spoonful of the spiciest condiment available.",
+            "Speak only in questions for the next 5 minutes.",
+            "Let someone send one text from your phone to anyone they choose.",
+            "Do your best impression of every person in the room.",
+            "Call a random contact and sing them a birthday song, even if it's not their birthday.",
+            "Keep a straight face while the group tries to make you laugh for 60 seconds.",
+          ]
+        },
+        couples: {
+          relaxing: [
+            "Give your partner a 60-second shoulder massage.",
+            "Look into your partner's eyes without blinking for 30 seconds.",
+            "Draw your partner's portrait in 60 seconds — blind.",
+            "Tell your partner the first thing that comes to mind when you think of them.",
+            "Recreate the moment you first met in 30 seconds.",
+            "Write your partner a 3-sentence love letter and read it aloud.",
+            "Do your best impression of your partner.",
+            "Name 5 things you love about your partner without repeating anything from before.",
+            "Hold your partner's hand and describe it to everyone else.",
+            "Give your partner a compliment for every year you've been together.",
+          ],
+          exciting: [
+            "Let your partner style your hair however they want.",
+            "Feed your partner the weirdest food combination available.",
+            "Let your partner post any old photo of you on their story.",
+            "Whisper a secret you've never told anyone into your partner's ear.",
+            "Let your partner pick your outfit for the rest of the day.",
+            "Allow your partner to prank-text any contact in your phone.",
+            "Do your partner's makeup or have them do yours.",
+            "Swap phones with your partner for the next 10 minutes.",
+            "Let your partner scroll your social media for 60 seconds.",
+            "Kiss your partner wherever they point on their hand.",
+          ]
+        },
+        strangers: {
+          relaxing: [
+            "Teach the group a handshake you just invented right now.",
+            "Introduce yourself as a completely different person with a made-up backstory.",
+            "Learn and remember 3 fun facts about each person in the group.",
+            "Do your best impersonation of a famous person.",
+            "Give everyone in the room a nickname based on first impressions.",
+            "Act out your morning routine in 30 seconds.",
+            "Tell the group something you're genuinely proud of.",
+            "Show the group your most-used emoji and explain why.",
+            "Describe yourself using only 3 words.",
+            "Share a fun fact about yourself that nobody would guess.",
+          ],
+          exciting: [
+            "Do your wildest dance for 30 seconds with no music.",
+            "Let the group choose a dare status for your social media for 1 hour.",
+            "Call any contact and tell them you have good news, then make something up.",
+            "Eat something without knowing what it is first.",
+            "Walk up to someone outside this group and ask for their most unpopular opinion.",
+            "Let the group give you a temporary nickname you must use all night.",
+            "Speak exclusively in rhymes for the next 4 minutes.",
+            "Let someone draw on your face with a safe marker.",
+            "Rank everyone in the room by their handshake quality, with commentary.",
+            "Go outside and shout your own name as loudly as you can.",
+          ]
+        },
+        classmates: {
+          relaxing: [
+            "Teach the group something academic in under 60 seconds.",
+            "Do your best impression of a teacher everyone knows.",
+            "Write a poem about school life using words suggested by the group.",
+            "Explain a complex topic as if teaching a 5-year-old.",
+            "Act out the most dramatic thing that happened in class this week.",
+            "Create a class schedule for your dream school day.",
+            "Do a mock graduation speech for 30 seconds.",
+            "Act as the substitute teacher and give everyone in the group a grade.",
+            "Describe each person in the group as if writing their school report card.",
+            "Invent a new class subject and pitch it to the group.",
+          ],
+          exciting: [
+            "Write something embarrassing on the group chat and delete it after 15 seconds.",
+            "Post a throwback photo from school on your story.",
+            "Let the group pick any contact from your phone to send a random emoji to.",
+            "Text a teacher 'I have a question' and don't follow up.",
+            "Do your most dramatic reading of the most boring textbook passage.",
+            "Impersonate your least favorite teacher for 1 full minute.",
+            "Let the group compose an email to a teacher from your account (harmless, must be approved first).",
+            "Rank the people in the room by most likely to become famous.",
+            "Write a fake exam answer so bad it's hilarious and read it aloud.",
+            "Reenact your most embarrassing school memory.",
+          ]
+        }
+      }
+    };
+
+    const vibeKey = vibe === 'exciting' ? 'exciting' : 'relaxing';
+    const relKey = ['friends','couples','strangers','classmates'].includes(r) ? r : 'friends';
+
+    let list;
+    try {
+      list = pools[type][relKey][vibeKey];
+    } catch(e) {
+      list = pools[type]['friends']['relaxing'];
+    }
+
+    // outdoor/crowded modifiers
+    let modifiedList = [...list];
+
+    if (loc === 'outdoors' && type === 'dare') {
+      modifiedList = modifiedList.concat([
+        "Find a natural object outside and give a dramatic 1-minute speech about it.",
+        "Do 5 cartwheels or attempts in a row outside.",
+        "Find something in nature that represents each person in the group.",
+        "Go as far as you can from the group while still being visible and wave dramatically.",
+      ]);
+    }
+
+    if (crowd === 'crowded' && type === 'dare') {
+      modifiedList = modifiedList.concat([
+        "Wave enthusiastically at a stranger as if you know them.",
+        "Ask someone nearby for their honest opinion on your outfit.",
+        "Compliment a stranger loudly enough for the group to hear.",
+      ]);
+    }
+
+    if (players > 10 && type === 'truth') {
+      modifiedList = modifiedList.concat([
+        "Point to the person in this group you'd call first in a crisis.",
+        "Rank everyone in the room by how well you know them.",
+        "Name one positive thing about every person here within 60 seconds.",
+        "Who in this group are you most curious about getting to know better?",
+      ]);
+    }
+
+    return modifiedList[Math.floor(Math.random() * modifiedList.length)];
+  }
+</script>
+</body>
+</html>
